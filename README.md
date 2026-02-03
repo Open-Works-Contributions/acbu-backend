@@ -125,6 +125,8 @@ backend/
 Once the server is running, API documentation is available at:
 - Swagger UI: `http://localhost:3000/api-docs`
 
+**Segment routes** (require API key with segment scope): `/v1/p2p`, `/v1/sme`, `/v1/international`, `/v1/salary`, `/v1/enterprise`, `/v1/savings`, `/v1/lending`, `/v1/gateway`, `/v1/bills`. For a full list of routes and smart contracts, see the repo docs: [API and Contracts Reference](../DOCS/API_AND_CONTRACTS_REFERENCE.MD).
+
 ## Database Management
 
 ### Prisma Studio
@@ -165,7 +167,7 @@ npm run test:coverage
 
 **Fintech:** Flutterwave (`FLUTTERWAVE_SECRET_KEY`, etc.), Paystack (`PAYSTACK_SECRET_KEY`), MTN MoMo (`MTN_MOMO_SUBSCRIPTION_KEY`, `MTN_MOMO_API_USER_ID`, `MTN_MOMO_API_KEY`). Optional: `FINTECH_CURRENCY_PROVIDERS`.
 
-**Stellar:** `STELLAR_NETWORK`, `STELLAR_SECRET_KEY`, and after deploy: `CONTRACT_ORACLE`, `CONTRACT_RESERVE_TRACKER`, `CONTRACT_MINTING`, `CONTRACT_BURNING`.
+**Stellar:** `STELLAR_NETWORK`, `STELLAR_SECRET_KEY`, and after deploy: `CONTRACT_ORACLE`, `CONTRACT_RESERVE_TRACKER`, `CONTRACT_MINTING`, `CONTRACT_BURNING`. Optional for segment features: `CONTRACT_SAVINGS_VAULT`, `CONTRACT_LENDING_POOL`, `CONTRACT_ESCROW`.
 
 ## Docker Services
 
