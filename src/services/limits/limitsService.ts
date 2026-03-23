@@ -9,6 +9,30 @@ import { reserveTracker, ReserveTracker } from '../reserve/ReserveTracker';
 import type { Audience } from '../../middleware/auth';
 import { AppError } from '../../middleware/errorHandler';
 
+function buildActorWhere(userId: string | null, organizationId: string | null) {
+  if (userId) {
+    return { userId };
+  }
+
+  if (organizationId) {
+    return {
+      OR: [
+        // User-scoped transactions under this organization.
+        { user: { organizationId } },
+        // Org API-key transactions can be created without a user relation.
+        {
+          AND: [
+            { userId: null },
+            { rateSnapshot: { path: ['organizationId'], equals: organizationId } },
+          ],
+        },
+      ],
+    };
+  }
+
+  return { userId: null };
+}
+
 /**
  * Check deposit limits for the given actor (userId or organizationId) and audience.
  * Throws AppError if limit exceeded.
@@ -23,13 +47,13 @@ export async function checkDepositLimits(
   const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
-  const whereUser = userId ? { userId } : { user: { organizationId } };
+  const whereActor = buildActorWhere(userId, organizationId);
   const mintedDaily = await prisma.transaction.aggregate({
     where: {
       type: 'mint',
       status: { in: ['pending', 'processing', 'completed'] },
       createdAt: { gte: since24h },
-      ...whereUser,
+      ...whereActor,
     },
     _sum: { usdcAmount: true },
   });
@@ -38,7 +62,7 @@ export async function checkDepositLimits(
       type: 'mint',
       status: { in: ['pending', 'processing', 'completed'] },
       createdAt: { gte: startOfMonth },
-      ...whereUser,
+      ...whereActor,
     },
     _sum: { usdcAmount: true },
   });
@@ -78,14 +102,14 @@ export async function checkWithdrawalLimits(
   const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
   const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
 
-  const whereUser = userId ? { userId } : { user: { organizationId } };
+  const whereActor = buildActorWhere(userId, organizationId);
   const burnedDaily = await prisma.transaction.aggregate({
     where: {
       type: 'burn',
       localCurrency: currency,
       status: { in: ['pending', 'processing', 'completed'] },
       createdAt: { gte: since24h },
-      ...whereUser,
+      ...whereActor,
     },
     _sum: { acbuAmountBurned: true },
   });
@@ -95,7 +119,7 @@ export async function checkWithdrawalLimits(
       localCurrency: currency,
       status: { in: ['pending', 'processing', 'completed'] },
       createdAt: { gte: startOfMonth },
-      ...whereUser,
+      ...whereActor,
     },
     _sum: { acbuAmountBurned: true },
   });

@@ -189,7 +189,12 @@ export async function depositFromBasketCurrency(
         status: 'pending',
         localCurrency: currency,
         localAmount: new Decimal(amountNum),
-        rateSnapshot: { deposit_currency: currency, amount: amountNum, timestamp: new Date().toISOString() },
+        rateSnapshot: {
+          deposit_currency: currency,
+          amount: amountNum,
+          organizationId: req.apiKey?.organizationId ?? null,
+          timestamp: new Date().toISOString(),
+        },
       },
     });
     await logAudit({
