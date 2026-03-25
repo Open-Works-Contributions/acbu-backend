@@ -2,9 +2,11 @@ export {
   getInvestmentSavingsReserveValueUsd,
   computeDeployableAllocation,
   type AllocationSummary,
-} from './allocationService';
+} from "./allocationService";
 export {
   recordYield,
   getYieldTotal,
+  getYieldTotals,
   type YieldCredit,
-} from './yieldAccountingService';
+  type YieldSource,
+} from "./yieldAccountingService";

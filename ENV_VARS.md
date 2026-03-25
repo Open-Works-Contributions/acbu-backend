@@ -71,6 +71,8 @@ The app uses **Prisma Accelerate** for the primary database (managed PostgreSQL;
 | `STELLAR_NETWORK` | `testnet` | `testnet` \| `mainnet` |
 | `STELLAR_HORIZON_URL` | horizon-testnet URL | Horizon base URL |
 | `STELLAR_SECRET_KEY` | — | Secret key for contract txs |
+| `STELLAR_BASE_FEE_STROOPS` | `100` | Base transaction fee in stroops (1 stroop = 0.0000001 XLM). Used as the static fee when dynamic fees are disabled, and as the fallback when a Horizon fee fetch fails. |
+| `STELLAR_USE_DYNAMIC_FEES` | `false` | Set to `true` to fetch the current recommended base fee from Horizon before each transaction. Automatically falls back to `STELLAR_BASE_FEE_STROOPS` if the Horizon request fails. Recommended for mainnet deployments under variable network load. |
 
 ## Stellar contract IDs (after deploy)
 
@@ -100,6 +102,25 @@ Or per network: `CONTRACT_ORACLE_TESTNET`, `CONTRACT_ORACLE_MAINNET`, etc.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `BASKET_METRICS_INTERVAL_DAYS` | `30` | Days between metrics ingestion and proposed basket weight creation |
+
+## Limits (Deposit/Withdrawal & Circuit Breakers)
+
+| Variable | Default (USD) | Description |
+|----------|---------|-------------|
+| `LIMIT_RETAIL_DEPOSIT_DAILY_USD` | `5000` | Daily deposit limit for retail users |
+| `LIMIT_RETAIL_DEPOSIT_MONTHLY_USD` | `50000` | Monthly deposit limit for retail users |
+| `LIMIT_RETAIL_WITHDRAWAL_DAILY_USD` | `10000` | Daily withdrawal limit for retail users |
+| `LIMIT_RETAIL_WITHDRAWAL_MONTHLY_USD` | `80000` | Monthly withdrawal limit for retail users |
+| `LIMIT_BUSINESS_DEPOSIT_DAILY_USD` | `50000` | Daily deposit limit for business users |
+| `LIMIT_BUSINESS_DEPOSIT_MONTHLY_USD` | `500000` | Monthly deposit limit for business users |
+| `LIMIT_BUSINESS_WITHDRAWAL_DAILY_USD` | `100000` | Daily withdrawal limit for business users |
+| `LIMIT_BUSINESS_WITHDRAWAL_MONTHLY_USD` | `800000` | Monthly withdrawal limit for business users |
+| `LIMIT_GOV_DEPOSIT_DAILY_USD` | `500000` | Daily deposit limit for government users |
+| `LIMIT_GOV_DEPOSIT_MONTHLY_USD` | `5000000` | Monthly deposit limit for government users |
+| `LIMIT_GOV_WITHDRAWAL_DAILY_USD` | `500000` | Daily withdrawal limit for government users |
+| `LIMIT_GOV_WITHDRAWAL_MONTHLY_USD` | `4000000` | Monthly withdrawal limit for government users |
+| `LIMIT_CIRCUIT_BREAKER_RESERVE_WEIGHT_PCT`| `10` | Reserve % weight threshold circuit breaker |
+| `LIMIT_CIRCUIT_BREAKER_MIN_RATIO` | `1.02` | Minimum reserve ratio threshold circuit breaker |
 
 ## Reserve
 
@@ -132,6 +153,7 @@ Or per network: `CONTRACT_ORACLE_TESTNET`, `CONTRACT_ORACLE_MAINNET`, etc.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `NOTIFICATION_EMAIL_PROVIDER` | `log` | `sendgrid` \| `ses` \| `log` |
+| `NOTIFICATION_FROM_EMAIL` | `noreply@acbu.example.com` | Verified sender email for SendGrid/SES |
 | `SENDGRID_API_KEY` | — | SendGrid API key when email provider is sendgrid |
 | `NOTIFICATION_SMS_PROVIDER` | `log` | `twilio` \| `africas_talking` \| `log` |
 | `TWILIO_ACCOUNT_SID` | — | Twilio account SID |
