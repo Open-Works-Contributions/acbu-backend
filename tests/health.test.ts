@@ -6,6 +6,12 @@
  * via jest.mocked() after the imports.
  */
 
+const mockQueryRaw = jest.fn();
+const mockPing = jest.fn();
+const mockGetMongoDB = jest.fn();
+const mockGetRabbitMQChannel = jest.fn();
+const mockDisconnect = jest.fn();
+
 // ── Mock every module that gets transitively loaded ───────────────────────────
 
 jest.mock("../src/config/env", () => ({
@@ -15,9 +21,6 @@ jest.mock("../src/config/env", () => ({
     apiVersion: "v1",
     databaseUrl: "postgresql://test",
     prismaAccelerateUrl: "",
-    mongodbUri: "mongodb://test",
-    rabbitmqUrl: "amqp://test",
-    jwtsmaAccelerateUrl: "",
     mongodbUri: "mongodb://test",
     rabbitmqUrl: "amqp://test",
     jwtSecret: "test-secret",
@@ -44,8 +47,14 @@ jest.mock("../src/config/logger", () => ({
 }));
 
 jest.mock("../src/config/database", () => ({
-  prisma: { $queryRaw: mockQueryRaw },
-  default: { $queryRaw: mockQueryRaw },
+  prisma: { 
+    $queryRaw: mockQueryRaw,
+    $disconnect: mockDisconnect,
+  },
+  default: { 
+    $queryRaw: mockQueryRaw,
+    $disconnect: mockDisconnect,
+  },
 }));
 
 jest.mock("../src/config/mongodb", () => ({
@@ -63,6 +72,9 @@ jest.mock("../src/config/rabbitmq", () => ({
 
 // ── Import SUT after mocks are in place ───────────────────────────────────────
 import { getHealthReport } from "../src/services/health/healthService";
+import { prisma } from "../src/config/database";
+import { disconnectMongoDB } from "../src/config/mongodb";
+import { disconnectRabbitMQ } from "../src/config/rabbitmq";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function setupHealthyDeps() {
@@ -77,6 +89,10 @@ function setupHealthyDeps() {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 describe("getHealthReport", () => {
   beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  afterEach(() => {
     jest.clearAllMocks();
   });
 
@@ -158,4 +174,19 @@ describe("getHealthReport", () => {
     expect(report.status).toBe("down");
     expect(report.details.postgres.status).toBe("down");
   }, 10_000);
+
+  afterAll(async () => {
+    // Close DB pool
+    if (prisma?.$disconnect) await prisma.$disconnect();
+
+    // Close MongoDB connection
+    // Note: Project uses disconnectMongoDB helper instead of mongoose.connection.close
+    await disconnectMongoDB();
+
+    // Close RabbitMQ connection if it exists
+    await disconnectRabbitMQ();
+
+    // Clear any remaining timeouts
+    jest.useRealTimers();
+  });
 });
